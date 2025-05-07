@@ -249,9 +249,9 @@ def GlavniDeo():
     else:
         Q = np.zeros((MAXSTANJE, 4))
 
-    alpha = 0.9
-    gamma = 0.9
-    epsilon = 0.6
+    alpha = 0.9 # learning rate - koliko verujemo novim informacijama
+    gamma = 0.9 # discount factor - koliko cenimo buduće nagrade
+    epsilon = 0.6 # koliko cesto agent pravi nasumicne poteze
 
     run = True
     sat = pygame.time.Clock()
