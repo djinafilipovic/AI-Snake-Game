@@ -40,69 +40,74 @@ class Uopsteno:
         self.a = a
         self.visina = visina
         self.sirina = sirina
-        self.prozor = pygame.display.set_mode((self.sirina * self.a, self.visina * self.a))
+        self.prozor = pygame.display.set_mode((sirina * a, visina * a))
 
     def NacrtajGrid(self):
         for i in range(self.visina):
             for j in range(self.sirina):
-                pygame.draw.line(self.prozor, (50, 50, 50), (i * self.a, 0), (i * self.a, self.visina * self.a))
-                pygame.draw.line(self.prozor, (50, 50, 50), (0, j * self.a), (self.sirina * self.a, j * self.a))
+                pygame.draw.line(self.prozor, (50, 50, 50), (i * self.a, 0), (i * self.a, 500))
+                pygame.draw.line(self.prozor, (50, 50, 50), (0, j * self.a), (500, j * self.a))
         pygame.display.update()
 
-class Jabucica:
-    def __init__(self, app):
-        self.vx = random.randint(0, app.sirina - 1)
-        self.vy = random.randint(0, app.visina - 1)
-
-class Zmija:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.xtacke_zmije = [self.x - 2, self.x - 1]
-        self.ytacke_zmije = [self.y, self.y]
-
-    def SudarSaZidom(self, app, x, y):
-        return x < 0 or x >= app.sirina or y < 0 or y >= app.visina
-
-    def SudarSaTelom(self, x, y):
-        return any(x == self.xtacke_zmije[i] and y == self.ytacke_zmije[i] for i in range(len(self.xtacke_zmije)))
-
-    def Crtaj(self, jabuka, app):
+    def Crtaj(self, zmijica, jabuka):
         global highscore, rekord, epbroj
-        app.prozor.fill((0, 0, 0))
-        app.NacrtajGrid()
 
-        self.xtacke_zmije.pop(0)
-        self.xtacke_zmije.append(self.x)
+        self.prozor.fill((0, 0, 0))
+        self.NacrtajGrid()
 
-        self.ytacke_zmije.pop(0)
-        self.ytacke_zmije.append(self.y)
+        zmijica.xtacke_zmije.pop(0)
+        zmijica.ytacke_zmije.pop(0)
+        zmijica.xtacke_zmije.append(zmijica.x)
+        zmijica.ytacke_zmije.append(zmijica.y)
 
-        for i in range(len(self.xtacke_zmije)):
-            pygame.draw.rect(app.prozor, (230, 230, 230),
-                             (self.xtacke_zmije[i] * app.a, self.ytacke_zmije[i] * app.a, app.a, app.a))
+        for i in range(len(zmijica.xtacke_zmije)):
+            pygame.draw.rect(self.prozor, (230, 230, 230), (zmijica.xtacke_zmije[i] * self.a, zmijica.ytacke_zmije[i] * self.a, self.a, self.a))
 
-        pygame.draw.rect(app.prozor, (250, 0, 0), (jabuka.vx * app.a, jabuka.vy * app.a, app.a, app.a))
+        pygame.draw.rect(self.prozor, (250, 0, 0), (jabuka.vx * self.a, jabuka.vy * self.a, self.a, self.a))
 
-        font = pygame.font.Font('freesansbold.ttf', 20)
-        score = len(self.xtacke_zmije) - 2
-        tekst = font.render('Score: ' + str(score), True, (255, 255, 255))
+        font = pygame.font.SysFont(None, 20)
+        score = len(zmijica.xtacke_zmije) - 2
 
         if highscore < score:
             highscore = score
             rekord.append(highscore)
             epbroj.append(brojep)
 
-        tekst1 = font.render('Highscore: ' + str(highscore), True, (255, 255, 255))
+        tekst = font.render(f'Score: {score}', True, (255, 255, 255))
+        tekst1 = font.render(f'Highscore: {highscore}', True, (255, 255, 255))
 
-        app.prozor.blit(tekst, (1, 1))
-        app.prozor.blit(tekst1, (150, 1))
+        self.prozor.blit(tekst, (1, 1))
+        self.prozor.blit(tekst1, (100, 1))
+
         pygame.display.update()
 
-    def NapraviVoce(self, jabuka, app):
-        while self.SudarSaTelom(jabuka.vx, jabuka.vy):
-            jabuka.vx = random.randint(0, app.sirina - 1)
-            jabuka.vy = random.randint(0, app.visina - 1)
+
+class Jabucica:
+    def __init__(self, app):
+        self.vx = random.randint(0, app.sirina - 1)
+        self.vy = random.randint(0, app.visina - 1)
+
+    def NapraviVoce(self, zmijica, app):
+        attempts = 0
+        while zmijica.SudarSaTelom(self.vx, self.vy):
+            self.vx = random.randint(0, app.sirina - 1)
+            self.vy = random.randint(0, app.visina - 1)
+            attempts += 1
+            if attempts > 100:
+                break
+
+class Zmija:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.xtacke_zmije = [x - 2, x - 1]
+        self.ytacke_zmije = [y, y]
+
+    def SudarSaZidom(self, app, x, y):
+        return x < 0 or x >= app.sirina or y < 0 or y >= app.visina
+
+    def SudarSaTelom(self, x, y):
+        return any(x == self.xtacke_zmije[i] and y == self.ytacke_zmije[i] for i in range(len(self.xtacke_zmije)))
 
     def Njam(self, jabuka, app):
         app.prozor.fill((0, 0, 0))
@@ -111,8 +116,7 @@ class Zmija:
         self.ytacke_zmije.append(self.y)
         app.NacrtajGrid()
         for i in range(len(self.xtacke_zmije)):
-            pygame.draw.rect(app.prozor, (255, 255, 255),
-                             (self.xtacke_zmije[i] * app.a, self.ytacke_zmije[i] * app.a, app.a, app.a))
+            pygame.draw.rect(app.prozor, (255, 255, 255), (self.xtacke_zmije[i] * app.a, self.ytacke_zmije[i] * app.a, app.a, app.a))
         pygame.display.update()
 
 class Sumica:
@@ -208,9 +212,9 @@ class Sumica:
     def render(self, zmijica, voce, app):
         if zmijica.x == voce.vx and zmijica.y == voce.vy:
             zmijica.Njam(voce, app)
-            zmijica.NapraviVoce(voce, app)
+            voce.NapraviVoce(zmijica, app)
         else:
-            zmijica.Crtaj(voce, app)
+            app.Crtaj(zmijica, voce)
 
 
 class DQN:
@@ -269,7 +273,7 @@ def GlavniDeo():
     zmijica, kruska, done, nagrada, stanje = polje.reset(app)
     stanje = np.reshape(stanje, [1, 6])
 
-    zmijica.NapraviVoce(kruska, app)
+    kruska.NapraviVoce(zmijica, app)
     polje.render(zmijica, kruska, app)
 
     fall_time = 0
